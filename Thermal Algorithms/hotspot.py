@@ -148,7 +148,8 @@ def find_blobs(mask, temp_c, delta, z, cfg: DetectorConfig):
         t = temp_c[y:y + h, x:x + w][sel]
         d = delta[y:y + h, x:x + w][sel]
         zz = z[y:y + h, x:x + w][sel]
-        est = cfg.person_height_m / (h * IFOV) if h > 0 else float("inf")
+        long_side = max(h, w)   # 1.7 m body length: height if upright, width if lying down
+        est = cfg.person_height_m / (long_side * IFOV) if long_side > 0 else float("inf")
         b = Blob(x=float(cents[i][0]), y=float(cents[i][1]), bbox=(int(x), int(y), int(w), int(h)),
                 area=int(area), peak_c=float(t.max()), mean_c=float(t.mean()),
                 mean_delta=float(d.mean()), peak_z=float(zz.max()),
