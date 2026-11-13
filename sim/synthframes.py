@@ -13,10 +13,11 @@ What it simulates:
     and periodic FFC (shutter) freezes
 
 Usage:
-python synth_frames.py --out sample.npz --frames 300 --seed 1
+python3 -m sim.synthframes --out data/synthetic/sample.npz --frames 300 --seed 1
 """
 import argparse
 import json
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -30,6 +31,7 @@ SS = 4                                   # supersampling factor for rendering
 
 PANO_W, PANO_H = 520, 200                # world strip the camera pans across
 HORIZON = 70                             # panorama row of the horizon
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def c_to_ck(t_c):
@@ -226,12 +228,13 @@ def generate(n_frames=300, seed=1, ambient=10.0, ffc_every=200, ffc_len=3):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", default="sample.npz")
+    ap.add_argument("--out", default=str(ROOT / "data" / "synthetic" / "sample.npz"))
     ap.add_argument("--frames", type=int, default=300)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--ambient", type=float, default=10.0, help="ambient air temp, C")
     args = ap.parse_args()
     frames, ffc, gt = generate(args.frames, args.seed, args.ambient)
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(args.out, frames=frames, ffc=ffc, gt=json.dumps(gt),
                         meta=json.dumps(dict(fps=FPS, hfov_deg=HFOV_DEG, ambient_c=args.ambient)))
     print(f"wrote {args.out}: {frames.shape[0]} frames, {ffc.sum()} FFC frames")

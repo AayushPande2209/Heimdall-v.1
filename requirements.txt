@@ -1,0 +1,7 @@
+# Raspberry Pi runtime only needs: numpy, opencv-python, scipy, onnxruntime
+numpy
+opencv-python
+scipy
+onnxruntime
+torch
+pillow

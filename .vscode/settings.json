@@ -1,0 +1,11 @@
+{
+  "files.watcherExclude": {
+    "**/data/**": true,
+    "**/results/**": true
+  },
+  "search.exclude": {
+    "**/data/**": true,
+    "**/results/**": true
+  },
+  "python.analysis.extraPaths": ["."]
+}
