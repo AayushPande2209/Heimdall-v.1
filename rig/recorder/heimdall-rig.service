@@ -1,0 +1,23 @@
+[Unit]
+Description=Heimdall autonomous field recorder
+After=local-fs.target heimdall-cpu-performance.service
+Wants=heimdall-cpu-performance.service
+
+[Service]
+Type=simple
+User=aayushpande2009
+Group=aayushpande2009
+SupplementaryGroups=gpio i2c spi
+WorkingDirectory=/home/aayushpande2009
+RuntimeDirectory=heimdall-rig
+RuntimeDirectoryMode=0750
+ExecStart=/home/aayushpande2009/det/.venv/bin/python /home/aayushpande2009/rig/rig_controller.py
+KillMode=process
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

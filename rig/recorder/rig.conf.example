@@ -1,0 +1,8 @@
+[rig]
+auto_record = on
+detection = on
+hold_seconds = 2.0
+button_pin = 26
+led_pin = 16
+minimum_free_gb = 1.0
+session_dir = /home/aayushpande2009/rec
