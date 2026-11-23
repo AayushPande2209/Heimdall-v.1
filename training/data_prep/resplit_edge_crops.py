@@ -1,6 +1,6 @@
 """Move complete sequences between staged full-data crop files.
 
-Run with: python3 -m data_prep.resplit_edge_crops
+Run with: python3 -m training.data_prep.resplit_edge_crops
 """
 import hashlib
 import json
@@ -12,7 +12,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / 'data' / 'fpir_full'
 KEYS = ('crops', 'labels', 'kinds', 'pose', 'visibility', 'seq', 'size_px')
 POSES = ('standing', 'sitting', 'lying')

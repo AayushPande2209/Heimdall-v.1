@@ -8,17 +8,15 @@ import os
 from pathlib import Path
 import queue
 import statistics
-import sys
 import threading
 import time
 import traceback
 
 import numpy as np
 
-HOME = Path.home()
-sys.path.insert(0, str(HOME))
+from .sources import LeptonSource
 
-from lep_vsync import Stream, grab
+HOME = Path.home()
 
 
 def detector_worker(input_queue, result_queue, output_dir, model_path, cutoff, nice_value):
@@ -146,8 +144,7 @@ def main():
     detector.start()
     writer_thread.start()
 
-    stream = Stream()
-    stream.hard()
+    stream = LeptonSource()
     frames = 0
     capture_resyncs = 0
     detector_drops = 0
@@ -158,10 +155,10 @@ def main():
     print(f"recording and detecting {args.duration:.0f} s -> ~/rec/{args.name}", flush=True)
     try:
         while time.time() - started < args.duration:
-            frame = grab(stream)
+            frame = stream.read()
             if frame is None:
                 capture_resyncs += 1
-                stream.hard()
+                stream.resync()
                 continue
             elapsed = time.time() - started
             write_queue.put((frame.tobytes(), elapsed))

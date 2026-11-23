@@ -14,11 +14,8 @@ import traceback
 
 import numpy as np
 
-HOME = Path.home()
-sys.path.insert(0, str(HOME))
-sys.path.insert(0, str(HOME / "det"))
-from lep_vsync import Stream, grab
-from run_live import detector_worker
+from .run_live import detector_worker
+from .sources import FakeSource, LeptonSource
 
 FRAME_BYTES = 160 * 120 * 2
 stop = threading.Event()
@@ -43,25 +40,32 @@ def atomic_json(path, value):
         os.close(fd)
 
 
-def main():
+def main(argv=None):
+    stop.clear()
     parser = argparse.ArgumentParser()
-    parser.add_argument("name")
-    parser.add_argument("--session-dir", type=Path, required=True)
-    parser.add_argument("--heartbeat", type=Path, required=True)
-    parser.add_argument("--boot-count", type=int, required=True)
-    parser.add_argument("--detection", choices=("on", "off"), default="on")
-    args = parser.parse_args()
+    parser.add_argument("name", nargs="?", default="session_fake")
+    parser.add_argument("--session-dir", type=Path, default=Path("sessions"))
+    parser.add_argument("--heartbeat", type=Path)
+    parser.add_argument("--boot-count", type=int, default=0)
+    parser.add_argument("--detection", choices=("on", "off"), default="off")
+    parser.add_argument("--model", type=Path)
+    parser.add_argument("--fake", action="store_true", help="record deterministic fake frames")
+    parser.add_argument("--frames", type=int, help="stop after this many frames")
+    args = parser.parse_args(argv)
     signal.signal(signal.SIGTERM, request_stop)
     signal.signal(signal.SIGINT, request_stop)
     rec = args.session_dir.expanduser()
     rec.mkdir(parents=True, exist_ok=True)
+    heartbeat = args.heartbeat or rec / f"{args.name}.heartbeat"
     raw_path = rec / f"{args.name}.raw"
     txt_path = rec / f"{args.name}.txt"
     meta_path = rec / f"{args.name}.meta.json"
-    output_dir = HOME / "det" / "output" / args.name
+    output_dir = rec / f"{args.name}.detections"
     if any(p.exists() for p in (raw_path, txt_path, meta_path, output_dir)):
         raise FileExistsError(args.name)
     if args.detection == "on":
+        if args.model is None:
+            parser.error("--model is required when detection is on")
         output_dir.mkdir(parents=True)
     started_wall = time.time()
     started_mono = time.monotonic()
@@ -118,26 +122,28 @@ def main():
         detector_results = mp.Queue(maxsize=1)
         worker = mp.Process(target=detector_worker,
                             args=(detector_queue, detector_results, str(output_dir),
-                                  str(HOME / "det" / "heimdall_cnn_full.onnx"), 0.5, 5))
+                                  str(args.model), 0.5, 5))
         worker.start()
     writer_thread = threading.Thread(target=writer, name="lepton-writer")
     writer_thread.start()
-    stream = None
+    source = None
     frames = resyncs = drops = 0
     max_gap = 0.0
     last_frame = None
     reason = "stopped"
     last_heartbeat = 0.0
     try:
-        stream = Stream()
-        stream.hard()
+        source = FakeSource(args.frames or 8) if args.fake else LeptonSource()
         print(f"recording {args.name}", flush=True)
         while not stop.is_set():
-            frame = grab(stream)
+            frame = source.read()
             now = time.monotonic()
             if frame is None:
+                if args.fake:
+                    reason = "complete"
+                    break
                 resyncs += 1
-                stream.hard()
+                source.resync()
                 continue
             elapsed = now - started_mono
             if last_frame is not None:
@@ -154,17 +160,18 @@ def main():
                 except queue.Full:
                     drops += 1
             if now - last_heartbeat >= 1:
-                args.heartbeat.write_text(f"{frames} {now}\n")
+                heartbeat.write_text(f"{frames} {now}\n")
                 last_heartbeat = now
             if frames % 50 == 0:
                 print(f"{frames} frames {frames / max(elapsed, .1):.2f} fps drops={drops}", flush=True)
-        reason = "signal"
+        if reason == "stopped":
+            reason = "signal"
     except BaseException as exc:
         reason = "error"
         print(f"capture error: {exc!r}\n{traceback.format_exc()}", file=sys.stderr, flush=True)
     finally:
-        if stream is not None:
-            stream.close()
+        if source is not None:
+            source.close()
         write_queue.put(None)
         writer_thread.join()
         if worker is not None:
@@ -180,18 +187,18 @@ def main():
         if writer_errors or written[0] != frames:
             reason = "writer_error"
         elapsed = max(.001, time.monotonic() - started_mono)
-        meta.update(status="closed" if reason == "signal" else "error", stop_reason=reason,
+        meta.update(status="closed" if reason in ("signal", "complete") else "error", stop_reason=reason,
                     ended_wall_time=time.time(), duration_seconds=round(elapsed, 3),
                     frame_count=frames, written_frames=written[0], fps=round(frames / elapsed, 3),
                     max_gap_seconds=round(max_gap, 4), capture_resyncs=resyncs,
                     detector_dropped_frames=drops, writer_errors=writer_errors,
-                    invalid_segments=getattr(stream, "invalid_segments", 0),
-                    vsync_timeouts=getattr(stream, "vsync_timeouts", 0))
+                    invalid_segments=getattr(source, "invalid_segments", 0),
+                    vsync_timeouts=getattr(source, "vsync_timeouts", 0))
         if detector_results is not None and not detector_results.empty():
             meta["detector_summary"] = detector_results.get()
         atomic_json(meta_path, meta)
         print(json.dumps(meta), flush=True)
-    return 0 if reason == "signal" else 1
+    return 0 if reason in ("signal", "complete") else 1
 
 
 if __name__ == "__main__":

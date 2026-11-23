@@ -1,24 +1,25 @@
 #!/bin/zsh
-# Run on the Mac from this rig directory. Requires key-based ssh and passwordless sudo during install.
+# Run from the repository. Requires key-based SSH and passwordless sudo during install.
 set -euo pipefail
 here=${0:A:h}
 project=${here:h}
+recorder=$project/rig/recorder
 remote=${1:-heimdall}
 stamp=$(date +%Y%m%d-%H%M%S)
-ssh "$remote" 'mkdir -p ~/rig ~/det ~/rec'
-for file in lep_vsync.py lepton_gpio.py record.py run_live.py rig_record.py rig_controller.py rig.conf.example heimdall-rig.service README.md; do
-  scp "$here/$file" "$remote:~/rig/$file"
+ssh "$remote" 'mkdir -p ~/rig/recorder ~/heimdall ~/det ~/rec'
+scp "$project/rig/__init__.py" "$remote:~/rig/__init__.py"
+for file in __init__.py lepton_grab.py lepton_gpio.py sources.py run_live.py recorder.py controller.py rig.conf.example heimdall-rig.service README.md; do
+  scp "$recorder/$file" "$remote:~/rig/recorder/$file"
 done
-# Preserve validated files on a configured Pi. New installations receive the bundled copies.
-ssh "$remote" "for file in lep_vsync.py lepton_gpio.py record.py; do if [ ! -e \"\$HOME/\$file\" ]; then cp \"\$HOME/rig/\$file\" \"\$HOME/\$file\"; fi; done; if [ ! -e \"\$HOME/det/run_live.py\" ]; then cp \"\$HOME/rig/run_live.py\" \"\$HOME/det/run_live.py\"; fi; if [ ! -e \"\$HOME/rig.conf\" ]; then cp \"\$HOME/rig/rig.conf.example\" \"\$HOME/rig.conf\"; fi"
-# Install detector source and model only if missing; never alter deployed detector files.
+ssh "$remote" "if [ ! -e \"\$HOME/rig.conf\" ]; then cp \"\$HOME/rig/recorder/rig.conf.example\" \"\$HOME/rig.conf\"; fi"
+# Install detector source only if missing; never alter deployed detector files.
 for file in crop_classifier.py pipeline.py hotspot.py tracker.py __init__.py; do
-  if ! ssh "$remote" "test -e ~/det/$file"; then
-    scp "$project/heimdall/$file" "$remote:~/det/$file"
+  if ! ssh "$remote" "test -e ~/heimdall/$file"; then
+    scp "$project/src/heimdall/$file" "$remote:~/heimdall/$file"
   fi
 done
-if ! ssh "$remote" 'test -e ~/det/heimdall_cnn_full.onnx'; then
-  scp "$project/models/heimdall_cnn_full.onnx" "$remote:~/det/heimdall_cnn_full.onnx"
+if ! ssh "$remote" 'test -e ~/det/heimdall_cnn_full.onnx' && [[ -f "$project/models/_local/heimdall_cnn_full.onnx" ]]; then
+  scp "$project/models/_local/heimdall_cnn_full.onnx" "$remote:~/det/heimdall_cnn_full.onnx"
 fi
 ssh "$remote" "set -eu
 sudo apt-get update
@@ -33,7 +34,7 @@ printf '%s\\n' 'aayushpande2009 ALL=(root) NOPASSWD: /usr/bin/systemctl poweroff
 sudo chmod 440 /etc/sudoers.d/heimdall-rig-poweroff
 sudo visudo -c
 if [ -e /etc/systemd/system/heimdall-rig.service ]; then sudo cp /etc/systemd/system/heimdall-rig.service /etc/systemd/system/heimdall-rig.service.bak-$stamp; fi
-sudo cp \"\$HOME/rig/heimdall-rig.service\" /etc/systemd/system/heimdall-rig.service
+sudo cp \"\$HOME/rig/recorder/heimdall-rig.service\" /etc/systemd/system/heimdall-rig.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now heimdall-rig.service
 "

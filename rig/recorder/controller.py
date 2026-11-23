@@ -9,12 +9,10 @@ from pathlib import Path
 import shutil
 import signal
 import subprocess
-import sys
 import time
 
 HOME = Path.home()
-sys.path.insert(0, str(HOME))
-from lepton_gpio import read_words
+from .lepton_gpio import read_words
 
 stop = False
 test_short = False
@@ -235,10 +233,13 @@ def main():
                             name = next_session(rec, HOME / "det" / "output")
                             if heartbeat.exists():
                                 heartbeat.unlink()
-                            child = subprocess.Popen([str(HOME / "det" / ".venv" / "bin" / "python"),
-                                                      str(HOME / "rig" / "rig_record.py"), name,
-                                                      "--session-dir", str(rec), "--heartbeat", str(heartbeat),
-                                                      "--boot-count", str(counter), "--detection", cfg["detection"]])
+                            command = [str(HOME / "det" / ".venv" / "bin" / "python"),
+                                       "-m", "rig.recorder.recorder", name,
+                                       "--session-dir", str(rec), "--heartbeat", str(heartbeat),
+                                       "--boot-count", str(counter), "--detection", cfg["detection"]]
+                            if cfg["detection"] == "on":
+                                command.extend(["--model", str(HOME / "det" / "heimdall_cnn_full.onnx")])
+                            child = subprocess.Popen(command)
                             child_started = now
                             log.info("started recorder pid=%s session=%s", child.pid, name)
                             error = False

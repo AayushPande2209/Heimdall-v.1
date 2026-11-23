@@ -1,6 +1,12 @@
 # Heimdall field rig
 
-Run `./install.sh heimdall` on the Mac from this folder. The installer copies these files to `~/rig` on the Pi, preserves existing validated capture and detector files, installs the narrow poweroff sudo rule, and enables the boot service. It backs up any existing system files before editing. It only changes `/boot/firmware/config.txt` to remove an existing `gpio-shutdown` overlay, after backup.
+Run `scripts/install_rig.zsh heimdall` from the repository. The installer copies the recorder package to `~/rig` on the Pi, preserves existing detector files, installs the narrow poweroff sudo rule, and enables the boot service. It backs up existing system files before editing.
+
+For a hardware-free local smoke test:
+
+```sh
+heimdall-recorder --fake --frames 8 --session-dir sessions/demo
+```
 
 On the Pi:
 

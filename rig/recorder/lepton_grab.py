@@ -4,7 +4,7 @@ import gpiod
 import numpy as np
 import spidev
 
-from lepton_gpio import enable_vsync
+from .lepton_gpio import enable_vsync
 
 PACKET_SIZE = 164
 PACKETS_PER_SEGMENT = 60
