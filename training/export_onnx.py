@@ -29,9 +29,11 @@ def build_model():
 
 def main():
     model = build_model()
-    model.load_state_dict(torch.load(ROOT / "models" / "heimdall_cnn_full.pt", map_location="cpu", weights_only=True))
+    local_models = ROOT / "models" / "_local"
+    local_models.mkdir(parents=True, exist_ok=True)
+    model.load_state_dict(torch.load(local_models / "heimdall_cnn_full.pt", map_location="cpu", weights_only=True))
     model.eval()
-    target = ROOT / "models" / "heimdall_cnn_full.onnx"
+    target = local_models / "heimdall_cnn_full.onnx"
     torch.onnx.export(model, torch.zeros(1, 1, 64, 32, dtype=torch.float32), target,
                       input_names=["crop"], output_names=["logit"], opset_version=17,
                       dynamic_axes={"crop": {0: "batch"}, "logit": {0: "batch"}},

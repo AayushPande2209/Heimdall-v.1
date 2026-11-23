@@ -20,7 +20,10 @@ def main():
     with np.load(ROOT / "data" / "fpir_full" / "crops_val.npz", allow_pickle=False) as data:
         x = normalize(data["crops"]).astype(np.float32)[:, None]
         kinds = data["kinds"]
-    session = ort.InferenceSession(str(ROOT / "models" / "heimdall_cnn_full.onnx"), providers=["CPUExecutionProvider"])
+    session = ort.InferenceSession(
+        str(ROOT / "models" / "_local" / "heimdall_cnn_full.onnx"),
+        providers=["CPUExecutionProvider"],
+    )
     logits = session.run(["logit"], {"crop": x})[0].reshape(-1)
     probability = 1.0 / (1.0 + np.exp(-np.clip(logits, -80, 80)))
     print("cutoff  person found  hard_neg called person  rand_neg called person")
