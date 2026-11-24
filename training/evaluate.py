@@ -1,8 +1,8 @@
 """
 Look inside a trained model's results without training anything.
 
-  python3 -m training.evaluate models/heimdall_cnn_full.pt
-  python3 -m training.evaluate models/archive/heimdall_cnn_fp.pt --split val
+  python3 -m training.evaluate models/_local/heimdall_cnn_full.pt
+  python3 -m training.evaluate models/_local/heimdall_cnn_fp.pt --split val
 
 Prints:
   1. How many people it finds at different confidence cutoffs, and how many

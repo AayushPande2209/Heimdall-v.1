@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Prepare the full ForestPersonsIR crop dataset.
 
-Run with: python3 -m data_prep.prepare_full
+Run with: python3 -m training.data_prep.prepare_full
 """
 import copy
 import json
@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 
 SRC = Path('/Users/aayush/ForestPersonsIR_full')
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'data' / 'fpir_full'
 SPLITS = ('train', 'val', 'test')
 POSES = ('standing', 'sitting', 'lying')

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heimdall"
+version = "0.1.0"
+description = "Thermal hot-spot detection, tracking, and crop classification for search-and-rescue prototyping"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy",
+  "opencv-python",
+  "scipy",
+  "onnxruntime",
+]
+
+[project.optional-dependencies]
+rig = ["gpiozero", "picamera2", "gpiod", "spidev"]
+train = ["torch", "pillow"]
+
+[project.scripts]
+heimdall-demo = "sim.demo:main"
+heimdall-evaluate = "training.evaluate:main"
+heimdall-choose-cutoff = "training.choose_cutoff:main"
+heimdall-export-onnx = "training.export_onnx:main"
+heimdall-recorder = "rig.recorder.recorder:main"
+heimdall-live = "rig.recorder.run_live:main"
+heimdall-rig-controller = "rig.recorder.controller:main"
+
+[tool.setuptools]
+packages = [
+  "heimdall",
+  "heimdall.ingest",
+  "sim",
+  "training",
+  "training.data_prep",
+  "rig",
+  "rig.recorder",
+]
+
+[tool.setuptools.package-dir]
+heimdall = "src/heimdall"
+sim = "sim"
+training = "training"
+rig = "rig"
+
+[tool.setuptools.package-data]
+"heimdall.ingest" = ["README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "rig/recorder"]
+norecursedirs = ["archive", "data", "models", "results", "sessions"]

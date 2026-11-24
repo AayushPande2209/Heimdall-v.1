@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Prepare the partial ForestPersonsIR crop dataset.
 
-Run with: python3 -m data_prep.prepare_data
+Run with: python3 -m training.data_prep.prepare_data
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import numpy as np
 
 
 SOURCE = Path("/Users/aayush/ForestPersonsIR")
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "fpir_partial"
 SPLITS = ("train", "val", "test")
 EXPECTED_KEYS = {

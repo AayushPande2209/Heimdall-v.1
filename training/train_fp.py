@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "fpir_full"         # made by the data-prep step
-MODEL = ROOT / "models" / "heimdall_cnn_full.pt"
+MODEL = ROOT / "models" / "_local" / "heimdall_cnn_full.pt"
 
 torch.manual_seed(0)
 device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -175,4 +175,4 @@ report("VALIDATION", val, x_val, y_val)
 # The test set is the honest final score. Only look at it once you're done
 # tweaking things based on validation, or it stops being a fair test.
 report("TEST", test, x_test, y_test)
-print("\nbest model saved as models/heimdall_cnn_full.pt")
+print("\nbest model saved as models/_local/heimdall_cnn_full.pt")

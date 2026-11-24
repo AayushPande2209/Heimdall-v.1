@@ -1,7 +1,6 @@
-# Raspberry Pi runtime only needs: numpy, opencv-python, scipy, onnxruntime
+# Core runtime requirements. Training additionally needs torch and pillow;
+# Raspberry Pi hardware extras are declared in pyproject.toml.
 numpy
 opencv-python
 scipy
 onnxruntime
-torch
-pillow

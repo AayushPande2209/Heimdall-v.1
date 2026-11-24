@@ -1,32 +1,71 @@
 # Heimdall
 
-Heimdall is a shoulder-mounted thermal person-detection prototype for search and rescue. Its Raspberry Pi pipeline runs a hot-spot detector, tracks candidates over time, and optionally scores tracked crops with a compact CNN.
+Heimdall is an early-stage shoulder-mounted thermal person-detection rig for
+search-and-rescue prototyping. A FLIR Lepton 3.5 feeds a Raspberry Pi 4 pipeline
+that detects thermal hot spots, tracks them over time, and can classify tracked
+crops with a small CNN.
 
-## Layout
+The repository openly develops the baseline pipeline, Raspberry Pi recording
+software, synthetic simulator, training/data-preparation code, and available
+hardware notes. It does **not** contain production model weights, datasets,
+recordings, or a hosted application. No production-readiness or field-performance
+claim is made.
 
-- `heimdall/`: Raspberry Pi runtime code
-- `sim/`: synthetic thermal footage and demo
-- `training/`: laptop-only CNN training, evaluation, cutoff selection, and ONNX export
-- `data_prep/`: ForestPersonsIR crop-generation and resplitting scripts
-- `models/`: current model plus archived older models
-- `data/`: generated full and partial datasets (Git-ignored)
-- `results/`: demos, evaluation images, and reports (Git-ignored)
-- `learning/`: learning exercises
-- `archive/`: superseded files retained for reference
+## Repository layout
 
-## Main commands
+- `src/heimdall/`: installable detector, tracker, pipeline, and classifier
+- `rig/recorder/`: Lepton capture, field recorder, controller, and service files
+- `training/`: crop-CNN training, evaluation, export, and data preparation
+- `sim/`: synthetic thermal frames and pipeline demo
+- `hardware/`: wiring/assembly notes and future CAD/BOM material
+- `models/`: policy and instructions; local weights live in ignored `_local/`
+- `tests/`: hardware-independent pipeline tests
+- `docs/`: data policy, decisions, inventory, and maintenance guidance
+- `archive/`: retained superseded code and learning experiments
 
-Run commands from the repository root:
+## Quickstart
+
+Python 3.11 or newer is required.
 
 ```sh
-python3 -m sim.demo --seed 1
-python3 -m sim.demo --seed 1 --cnn models/heimdall_cnn_full.onnx --cutoff 0.5
-python3 -m training.evaluate models/heimdall_cnn_full.pt
-python3 -m training.choose_cutoff
-python3 -m training.export_onnx
-python3 -m training.train_fp
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e .
+
+python3 -m unittest discover -s rig/recorder -v
+python3 -m pytest -q
+
+# Hardware-free recorder smoke test
+heimdall-recorder --fake --frames 8 --session-dir sessions/demo
+
+# Synthetic detector/tracker demo (no model required)
+heimdall-demo --seed 1
 ```
 
-The current Raspberry Pi model is `models/heimdall_cnn_full.onnx` with cutoff `0.5`. Raw full-resolution source data remains outside this repository at `~/ForestPersonsIR_full`.
+Training tools require `python3 -m pip install -e '.[train]'`. Raspberry Pi
+hardware dependencies are grouped under the `rig` extra; on Raspberry Pi OS,
+some are normally installed through `apt` rather than PyPI.
 
-ForestPersonsIR is licensed under CC BY-NC-SA 4.0 (non-commercial). Models trained on it are for research and prototyping only.
+Local ForestPersonsIR-trained weights belong under `models/_local/`. For example:
+
+```sh
+python3 -m training.evaluate models/_local/heimdall_cnn_full.pt
+python3 -m training.choose_cutoff
+```
+
+See [the docs](docs/) and the [field-rig notes](rig/recorder/README.md) for more.
+
+## Hardware
+
+Current wiring notes are documented in `rig/recorder/README.md`; this checkout
+does not yet contain CAD or a complete BOM. When editable hardware sources are
+added, the planned license is CERN-OHL-W. Assembly documentation and instructions
+are planned for CC BY 4.0. No hardware license text is committed yet because
+there are no publishable hardware design files to license.
+
+## Data and models
+
+ForestPersonsIR is CC BY-NC-SA 4.0 and non-commercial. It must be obtained by the
+user. Derived data, recordings, and trained weights are intentionally excluded
+from this public repository; see [docs/data.md](docs/data.md) and
+[models/README.md](models/README.md).

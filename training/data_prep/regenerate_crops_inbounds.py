@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate partial crop NPZs with in-bounds negative windows.
 
-Run with: python3 -m data_prep.regenerate_crops_inbounds
+Run with: python3 -m training.data_prep.regenerate_crops_inbounds
 """
 
 from __future__ import annotations

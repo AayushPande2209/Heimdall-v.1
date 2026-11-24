@@ -1,6 +1,6 @@
 """Replay v1 order and replace negatives while matching edge rates.
 
-Run with: python3 -m data_prep.regenerate_edge_negatives
+Run with: python3 -m training.data_prep.regenerate_edge_negatives
 """
 import json
 import shutil
@@ -13,7 +13,7 @@ import numpy as np
 
 from . import prepare_full as prep
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / 'data' / 'fpir_full'
 SPLITS = ('train', 'val')
 legacy = np.random.default_rng(0)

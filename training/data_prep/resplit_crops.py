@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reassign partial crop records by whole sequence.
 
-Run with: python3 -m data_prep.resplit_crops
+Run with: python3 -m training.data_prep.resplit_crops
 """
 
 from pathlib import Path
@@ -11,7 +11,7 @@ import os
 import numpy as np
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "fpir_partial"
 NEW_VAL = {
     "001_FPV_Person_summer_forest",
