@@ -58,9 +58,10 @@ See [the docs](docs/) and the [field-rig notes](rig/recorder/README.md) for more
 ## Hardware
 
 Current wiring notes are documented in `rig/recorder/README.md`; this checkout
-does not yet contain CAD or a complete BOM.
-
-TODO: License to be chosen (e.g. a CERN-OHL variant).
+does not yet contain CAD or a complete BOM. When editable hardware sources are
+added, the planned license is CERN-OHL-W. Assembly documentation and instructions
+are planned for CC BY 4.0. No hardware license text is committed yet because
+there are no publishable hardware design files to license.
 
 ## Data and models
 

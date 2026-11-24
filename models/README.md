@@ -11,3 +11,8 @@ and `.onnx` files in `models/_local/`; that directory is intentionally ignored.
 Expected crop-classifier preprocessing is per-crop median subtraction followed
 by division by the crop standard deviation. Inputs are 32 pixels wide by 64
 pixels high.
+
+The intended public baseline will be trained on Boreas-collected Lepton footage,
+not ForestPersonsIR. Before publishing its weights, add a model card covering the
+training data, participant consent, preprocessing, intended use, evaluation,
+known limitations, and redistribution terms.
