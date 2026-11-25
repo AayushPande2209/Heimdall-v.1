@@ -17,7 +17,7 @@ claim is made.
 - `rig/recorder/`: Lepton capture, field recorder, controller, and service files
 - `training/`: crop-CNN training, evaluation, export, and data preparation
 - `sim/`: synthetic thermal frames and pipeline demo
-- `hardware/`: wiring/assembly notes and future CAD/BOM material
+- `hardware/`: R3 shoulder-mount CAD/STLs, fit notes, and future BOM
 - `models/`: policy and instructions; local weights live in ignored `_local/`
 - `tests/`: hardware-independent pipeline tests
 - `docs/`: data policy, decisions, inventory, and maintenance guidance
@@ -57,11 +57,10 @@ See [the docs](docs/) and the [field-rig notes](rig/recorder/README.md) for more
 
 ## Hardware
 
-Current wiring notes are documented in `rig/recorder/README.md`; this checkout
-does not yet contain CAD or a complete BOM. When editable hardware sources are
-added, the planned license is CERN-OHL-W. Assembly documentation and instructions
-are planned for CC BY 4.0. No hardware license text is committed yet because
-there are no publishable hardware design files to license.
+Current wiring notes are documented in `rig/recorder/README.md`. The editable R3
+dual-camera shoulder-mount design, its printable STL set, and fit notes are under
+`hardware/`. CAD and STL files are licensed under CERN-OHL-W-2.0; hardware
+documentation is licensed under CC BY 4.0. A complete BOM has not been added yet.
 
 ## Data and models
 
