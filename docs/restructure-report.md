@@ -118,5 +118,7 @@ test discovery.
   files; do not silently discard them.
 - Replace rig `sys.path` manipulation with installed-package imports.
 - Move every ForestPersonsIR-derived weight into ignored local model storage.
-- The repository currently has no CAD/hardware content and no recorder tests.
-- Hardware licensing remains undecided.
+- At restructuring time the repository had no CAD/hardware content and no recorder
+  tests. The R3 shoulder-mount CAD and printable meshes were added afterward.
+- Hardware licensing was subsequently set to CERN-OHL-W-2.0 for CAD/STLs and
+  CC BY 4.0 for hardware documentation.

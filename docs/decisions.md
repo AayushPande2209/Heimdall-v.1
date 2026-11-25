@@ -7,13 +7,14 @@
 - **Consequences:** The code has permissive reuse terms and a patent grant. ADIAT
   and other GPL implementation code must not be copied into this repository.
 
-## 2026-11-24 — Hardware and assembly licensing plan
+## 2026-11-24 — Hardware and assembly licensing
 
-- **Status:** accepted, deferred until hardware files exist
-- **Decision:** Use CERN-OHL-W for editable hardware design files and CC BY 4.0
+- **Status:** accepted and applied
+- **Decision:** Use CERN-OHL-W-2.0 for editable hardware design files and generated
+  meshes, and CC BY 4.0
   for assembly documentation and instructions.
-- **Consequences:** Check the final CERN-OHL-W text against the release plan before
-  committing it. No hardware license text is needed while no CAD/BOM is published.
+- **Consequences:** The official CERN-OHL-W-2.0 text is committed under
+  `hardware/LICENSES/`; each released hardware source carries an SPDX notice.
 
 ## 2026-11-24 — Temporary archive retention
 
