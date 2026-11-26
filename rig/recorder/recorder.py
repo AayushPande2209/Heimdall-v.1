@@ -15,6 +15,7 @@ import traceback
 import numpy as np
 
 from .run_live import detector_worker
+from .rgb import RGBRecorder
 from .sources import FakeSource, LeptonSource
 
 FRAME_BYTES = 160 * 120 * 2
@@ -49,6 +50,12 @@ def main(argv=None):
     parser.add_argument("--boot-count", type=int, default=0)
     parser.add_argument("--detection", choices=("on", "off"), default="off")
     parser.add_argument("--model", type=Path)
+    parser.add_argument("--record-rgb", choices=("on", "off"), default="off")
+    parser.add_argument("--rgb-width", type=int, default=1536)
+    parser.add_argument("--rgb-height", type=int, default=864)
+    parser.add_argument("--rgb-fps", type=int, default=30)
+    parser.add_argument("--rgb-bitrate", type=int, default=4000000)
+    parser.add_argument("--press-monotonic", type=float)
     parser.add_argument("--fake", action="store_true", help="record deterministic fake frames")
     parser.add_argument("--frames", type=int, help="stop after this many frames")
     args = parser.parse_args(argv)
@@ -68,9 +75,12 @@ def main(argv=None):
             parser.error("--model is required when detection is on")
         output_dir.mkdir(parents=True)
     started_wall = time.time()
-    started_mono = time.monotonic()
+    started_mono_ns = time.monotonic_ns()
+    started_mono = started_mono_ns / 1_000_000_000
     meta = dict(session=args.name, boot_count=args.boot_count, started_wall_time=started_wall,
-                wall_clock_trusted=False, detection=args.detection, status="recording", frame_count=0)
+                wall_clock_trusted=False, detection=args.detection, status="recording", frame_count=0,
+                thermal_timestamp_origin_monotonic_ns=started_mono_ns,
+                rgb_requested=args.record_rgb == "on")
     atomic_json(meta_path, meta)
     write_queue = queue.Queue()
     writer_errors = []
@@ -126,17 +136,26 @@ def main(argv=None):
         worker.start()
     writer_thread = threading.Thread(target=writer, name="lepton-writer")
     writer_thread.start()
+    rgb = None
+    if args.record_rgb == "on":
+        rgb = RGBRecorder(rec, args.name, args.rgb_width, args.rgb_height,
+                          args.rgb_fps, args.rgb_bitrate, lambda line: print(line, flush=True))
+        rgb.start()
     source = None
     frames = resyncs = drops = 0
     max_gap = 0.0
     last_frame = None
     reason = "stopped"
     last_heartbeat = 0.0
+    first_frame_latency = None
     try:
+        meta["thermal_capture_start_monotonic_ns"] = time.monotonic_ns()
         source = FakeSource(args.frames or 8) if args.fake else LeptonSource()
         print(f"recording {args.name}", flush=True)
         while not stop.is_set():
             frame = source.read()
+            if rgb is not None:
+                rgb.poll()
             now = time.monotonic()
             if frame is None:
                 if args.fake:
@@ -146,6 +165,9 @@ def main(argv=None):
                 source.resync()
                 continue
             elapsed = now - started_mono
+            if first_frame_latency is None and args.press_monotonic is not None:
+                first_frame_latency = round(now - args.press_monotonic, 3)
+                print(f"FIRST_FRAME_LATENCY session={args.name} seconds={first_frame_latency}", flush=True)
             if last_frame is not None:
                 max_gap = max(max_gap, now - last_frame)
             last_frame = now
@@ -160,7 +182,9 @@ def main(argv=None):
                 except queue.Full:
                     drops += 1
             if now - last_heartbeat >= 1:
-                heartbeat.write_text(f"{frames} {now}\n")
+                heartbeat_tmp = heartbeat.with_suffix(".tmp")
+                heartbeat_tmp.write_text(f"{frames} {now}\n")
+                os.replace(heartbeat_tmp, heartbeat)
                 last_heartbeat = now
             if frames % 50 == 0:
                 print(f"{frames} frames {frames / max(elapsed, .1):.2f} fps drops={drops}", flush=True)
@@ -172,6 +196,8 @@ def main(argv=None):
     finally:
         if source is not None:
             source.close()
+        if rgb is not None:
+            meta["rgb"] = rgb.stop()
         write_queue.put(None)
         writer_thread.join()
         if worker is not None:
@@ -191,6 +217,7 @@ def main(argv=None):
                     ended_wall_time=time.time(), duration_seconds=round(elapsed, 3),
                     frame_count=frames, written_frames=written[0], fps=round(frames / elapsed, 3),
                     max_gap_seconds=round(max_gap, 4), capture_resyncs=resyncs,
+                    press_to_first_frame_seconds=first_frame_latency,
                     detector_dropped_frames=drops, writer_errors=writer_errors,
                     invalid_segments=getattr(source, "invalid_segments", 0),
                     vsync_timeouts=getattr(source, "vsync_timeouts", 0))

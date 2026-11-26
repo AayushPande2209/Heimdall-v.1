@@ -1,0 +1,13 @@
+[rig]
+auto_record_on_boot = false
+detection = on
+hold_seconds = 2.0
+button_pin = 26
+led_pin = 16
+minimum_free_gb = 1.0
+session_dir = /home/aayushpande2009/rec
+record_rgb = true
+rgb_width = 1536
+rgb_height = 864
+rgb_fps = 30
+rgb_bitrate = 4000000
