@@ -1,7 +1,6 @@
 [Unit]
 Description=Heimdall autonomous field recorder
-After=local-fs.target heimdall-cpu-performance.service
-Wants=heimdall-cpu-performance.service
+After=local-fs.target
 
 [Service]
 Type=simple

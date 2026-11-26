@@ -18,3 +18,4 @@ dist/
 *.key
 .DS_Store
 .vscode/
+*.bak-*

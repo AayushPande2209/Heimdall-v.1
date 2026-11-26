@@ -1,0 +1,1 @@
+aayushpande2009 ALL=(root) NOPASSWD: /usr/bin/systemctl poweroff

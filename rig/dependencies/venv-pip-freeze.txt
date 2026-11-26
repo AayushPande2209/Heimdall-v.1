@@ -1,0 +1,5 @@
+flatbuffers==25.12.19
+onnxruntime==1.32.0
+opencv-python-headless==5.1.0.95
+protobuf==7.36.2
+scipy==1.18.1

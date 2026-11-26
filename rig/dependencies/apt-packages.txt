@@ -1,0 +1,7 @@
+ffmpeg	8:7.1.5-0+deb13u1+rpt2
+i2c-tools	4.4-2
+python3-libgpiod	2.2.1-2+deb13u1
+python3-numpy	1:2.2.4+ds-1
+python3-spidev	3.6-1+b6
+python3-venv	3.13.5-1
+rpicam-apps	1.15.0-1
